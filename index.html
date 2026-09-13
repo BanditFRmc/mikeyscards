@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mikey’s Cards — Custom Pokémon Card Packs</title>
+    <!-- Google Fonts for modern gaming/collecting aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --text-muted: #64748b;
+            --primary-red: #ef4444;
+            --primary-red-dark: #dc2626;
+            --accent-gold: #f59e0b;
+            --accent-gold-glow: rgba(245, 158, 11, 0.4);
+            --border-color: #e2e8f0;
+            --nav-bg: rgba(255, 255, 255, 0.85);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --table-header: #f8fafc;
+            --table-stripe: #f8fafc;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0b0f19;
+            --card-bg: #131c2e;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-red: #f87171;
+            --primary-red-dark: #ef4444;
+            --accent-gold: #fbbf24;
+            --accent-gold-glow: rgba(251, 191, 36, 0.3);
+            --border-color: #1e293b;
+            --nav-bg: rgba(19, 28, 46, 0.85);
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --table-header: #1a263d;
+            --table-stripe: #162033;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-top: 80px;
+        }
+
+        /* Navigation Bar */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 1000;
+        }
+
+        .nav-logo {
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--primary-red);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary-red);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--accent-gold);
+            transform: scale(1.05);
+        }
+
+        /* Container Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header / Hero Section */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            color: var(--primary-red);
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        header p {
+            font-size: clamp(1.1rem, 2vw, 1.35rem);
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        /* In-Person Sales Banner */
+        .banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, var(--accent-gold), #d97706);
+            color: #ffffff;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px var(--accent-gold-glow);
+            animation: pulse-glow 2.5s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-gold-glow); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        /* Section Titles */
+        h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 40px;
+            height: 4px;
+            background-color: var(--accent-gold);
+            border-radius: 2px;
+        }
+
+        /* Packs Section */
+        .packs-section {
+            margin-bottom: 60px;
+        }
+
+        .packs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .pack-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pack-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 30px -10px var(--accent-gold-glow);
+        }
+
+        .pack-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-red);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .pack-header h3 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .pack-price {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+        }
+
+        .pack-features {
+            list-style: none;
+            margin-bottom: 25px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .pack-features li {
+            padding: 8px 0;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pack-features li span {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        /* Card Visual Graphic inside the pack container */
+        .card-graphic {
+            height: 120px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.08));
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .card-graphic-inner {
+            width: 50px;
+            height: 75px;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-gold);
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: absolute;
+            transform: rotate(-5deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .card-graphic-inner:nth-child(2) {
+            transform: rotate(8deg) translate(10px, -5px);
+            border-color: var(--primary-red);
+        }
+
+        /* Interactive Preview Button */
+        .btn-preview {
+            width: 100%;
+            background-color: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-preview:hover {
+            background-color: var(--primary-red-dark);
+            transform: scale(1.02);
+        }
+
+        /* Table Section */
+        .table-section {
+            margin-bottom: 60px;
+        }
+
+        .table-wrapper {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--table-header);
+            font-weight: 700;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: var(--table-stripe);
+        }
+
+        td {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        td:first-child {
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        /* About & Sales Section */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .info-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: var(--shadow);
+        }
+
+        .info-card p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.7;
+            font-weight: 500;
+        }
+
+        .sales-highlight {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: var(--text-color) !important;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.1));
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-gold);
+            margin-top: 15px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-color);
+            padding: 40px 20px;
+            text-align: center;
+            background-color: var(--card-bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--primary-red);
+        }
+
+        .back-to-top {
+            background: none;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .back-to-top:hover {
+            border-color: var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        /* Modal Popup for Pack Preview */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            text-align: center;
+            animation: modal-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes modal-pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            color: var(--primary-red);
+        }
+
+        .modal-content p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+
+        .btn-close-modal {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-close-modal:hover {
+            opacity: 0.9;
+        }
+
+        /* Mobile Optimization Improvements */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px;
+            }
+            nav {
+                padding: 0 4%;
+            }
+            .container {
+                padding: 25px 15px;
+            }
+            .pack-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="#" class="nav-logo">🎴 Mikey’s Cards</a>
+        <div class="nav-links">
+            <a href="#packs">Packs</a>
+            <a href="#contents">Contents</a>
+            <a href="#about">About</a>
+            <button class="theme-toggle" id="themeToggleBtn" aria-label="Toggle Dark/Light Mode">☀️</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Header / Hero Section -->
+        <header>
+            <h1>🎴 Mikey’s Cards</h1>
+            <p>“Random Pokémon card packs made for collectors & friends!”</p>
+            <div class="banner">
+                📍 IN-PERSON SALES ONLY
+            </div>
+        </header>
+
+        <!-- Packs Section -->
+        <section id="packs" class="packs-section">
+            <h2>Choose Your Pack</h2>
+            <div class="packs-grid">
+                
+                <!-- Small Pack -->
+                <div class="pack-card">
+                    <span class="pack-badge">Starter</span>
+                    <div class="pack-header">
+                        <h3>Small Pack</h3>
+                        <div class="pack-price">£1</div>
+                    </div>
+                    <div class="card-graphic">
+                        <div class="card-graphic-inner">✨</div>
+                        <div class="card-graphic-inner">🎴</div>
+                    </div>
+                    <ul class="pack-features">
+                        <li><span>5</span> cards total</li>
+                        <li><span>1</span> Holo</li>
+                        <li><span>1</span> Trainer</li>
+                        <li><span>1</span> Energy</li>
+                        <li><span>2</span> Normal</li>
+                    </ul>
+                    <button class="btn-preview" onclick="openModal('Small Pack', '£1', '5 cards total (1 Holo, 1 Trainer, 1 Energy, 2 Normal)')">View Pack Details</button>
+                </div>
+
+                <!-- Medium Pack -->
+                <div class="pack-card" style="border-color: var(--accent-gold);">
+                    <span class="pack-badge" style="background: var(--accent-gold);">Popular</span>
+                    <div class="pack-header">
+                        <h3>Medium Pack</h3>
+                        <div class="pack-price">£2</div>
+                    </div>
+                    <div class="card-graphic">
+                        <div class="card-graphic-inner">✨</div>
+                        <div class="card-graphic-inner">⚡</div>
+                    </div>
+                    <ul class="pack-features">
+                        <li><span>10</span> cards total</li>
+                        <li><span>2</span> Holos</li>
+                        <li><span>2</span> Trainers</li>
+                        <li><span>2</span> Energy</li>
+                        <li><span>4</span> Normal</li>
+                    </ul>
+                    <button class="btn-preview" onclick="openModal('Medium Pack', '£2', '10 cards total (2 Holos, 2 Trainers, 2 Energy, 4 Normal)')">View Pack Details</button>
+                </div>
+
+                <!-- Large Pack -->
+                <div class="pack-card">
+                    <span class="pack-badge">Collector</span>
+                    <div class="pack-header">
+                        <h3>Large Pack</h3>
+                        <div class="pack-price">£3</div>
+                    </div>
+                    <div class="card-graphic">
+                        <div class="card-graphic-inner">🔥</div>
+                        <div class="card-graphic-inner">✨</div>
+                    </div>
+                    <ul class="pack-features">
+                        <li><span>15</span> cards total</li>
+                        <li><span>3</span> Holos</li>
+                        <li><span>3</span> Trainers</li>
+                        <li><span>3</span> Energy</li>
+                        <li><span>6</span> Normal</li>
+                    </ul>
+                    <button class="btn-preview" onclick="openModal('Large Pack', '£3', '15 cards total (3 Holos, 3 Trainers, 3 Energy, 6 Normal)')">View Pack Details</button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Pack Contents Table Section -->
+        <section id="contents" class="table-section">
+            <h2>Pack Contents Breakdown</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pack</th>
+                            <th>Holo</th>
+                            <th>Trainer</th>
+                            <th>Energy</th>
+                            <th>Normal</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>£1 Small Pack</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>2</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>£2 Medium Pack</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>2</td>
+                            <td>4</td>
+                            <td>10</td>
+                        </tr>
+                        <tr>
+                            <td>£3 Large Pack</td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td>3</td>
+                            <td>6</td>
+                            <td>15</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- About & Sales Section -->
+        <section id="about" class="info-grid">
+            <div class="info-card">
+                <h2>About Mikey’s Cards</h2>
+                <p style="margin-top: 15px;">Mikey’s Cards creates custom, randomized Pokémon card packs tailored especially for friends and fellow collectors. Every pack is put together carefully to ensure balanced collections, offering different pack sizes with clear, transparent contents so you always know what kind of card mix to expect.</p>
+            </div>
+            <div class="info-card">
+                <h2>Sales Information</h2>
+                <p class="sales-highlight">Currently available for in-person sales only.</p>
+                <p style="margin-top: 15px;">Packs can be collected or purchased directly in person. No online ordering or shipping is available—built simply for trading and sharing the hobby locally!</p>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-logo">🎴 Mikey’s Cards</div>
+        <button class="back-to-top" onclick="scrollToTop()">Back to Top ↑</button>
+    </footer>
+
+    <!-- Interactive Pack Preview Modal -->
+    <div class="modal" id="packModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Pack Details</h3>
+            <p id="modalDescription">Pack contents description goes here.</p>
+            <button class="btn-close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Theme Toggle Functionality with localStorage Persistence
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const bodyElement = document.body;
+
+        // Check saved storage or system preference
+        const savedTheme = localStorage.getItem('mikey_cards_theme');
+        if (savedTheme) {
+            bodyElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        } else {
+            // Default to dark mode as requested by dark theme style baseline
+            bodyElement.setAttribute('data-theme', 'dark');
+            updateThemeIcon('dark');
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = bodyElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            bodyElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('mikey_cards_theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        // Modal Popups for Pack Preview
+        const modal = document.getElementById('packModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalDescription = document.getElementById('modalDescription');
+
+        function openModal(packName, price, details) {
+            modalTitle.textContent = `${packName} (${price})`;
+            modalDescription.textContent = `This configuration includes: ${details}. Perfect for starting or boosting any card collection!`;
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        // Close modal when clicking outside contents
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Smooth Scroll to Top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
